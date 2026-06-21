@@ -14,11 +14,8 @@ export async function POST(req: Request) {
     await valkey.lpush(memoryKey, JSON.stringify({ role: 'user', content: message }));
     await valkey.ltrim(memoryKey, 0, 50);
 
-    // 2. Simple fallback network extraction
-    if (message.toLowerCase().includes('met ') || message.toLowerCase().includes('connected with') || message.toLowerCase().includes('know')) {
-      await valkey.sadd('network_connections', message);
-    }
-
+    // Note: Crude fallback extraction removed. 
+    // We now use Vertex AI for intelligent entity extraction below.
     // 3. Breeth AI Integration (Memory/Intent Extraction)
     let breethStatus = "Skipped";
     if (breethApiKey) {
@@ -69,10 +66,10 @@ ${networkContext.length > 0 ? networkContext.map(c => `- ${c}`).join('\n') : "No
 
 INSTRUCTIONS:
 1. When the founder asks a question, analyze the CONTEXT above to give a precise, confident answer. Do not say "Based on the context...", just answer naturally.
-2. If the founder tells you about a new meeting, acknowledge that you have permanently saved this connection.
-3. MULTIMODAL CAPABILITIES: If the user uploaded an image (e.g. business card, whiteboard) or audio file, YOU CAN SEE/HEAR IT. 
-   - If it's a business card, extract the name, title, and company, and treat it as a new contact. 
-   - If it's an audio voice memo, transcribe it, identify the intent, and log the action items.`;
+2. EXTRACT ENTITIES: Always look for new people, companies, or key relationships mentioned in the user's message (or in uploaded business cards/audio). 
+3. JSON FORMAT: You MUST return a JSON object with exactly two keys:
+   - "reply": Your conversational response to the founder.
+   - "extracted_contacts": An array of strings representing new people/companies found (e.g., ["Sam Altman (OpenAI)", "Sarah (Designer)"]). If none, return an empty array [].`;
 
       // Construct the parts array
       const parts: any[] = [{ text: systemPrompt + '\n\n' + message }];
@@ -95,9 +92,27 @@ INSTRUCTIONS:
         contents: [
           { role: 'user', parts: parts }
         ],
+        config: {
+          responseMimeType: "application/json",
+        }
       });
 
-      reply = response.text + `\n\n*(⚡ ${breethStatus} | Model: Vertex AI Gemini 3.0 Pro | 👁️ Multimodal)*`;
+      // Parse the JSON response from Gemini
+      let parsedResponse;
+      try {
+        parsedResponse = JSON.parse(response.text || "{}");
+      } catch (e) {
+        parsedResponse = { reply: response.text, extracted_contacts: [] };
+      }
+
+      // 6. Save cleanly extracted entities to Valkey Network Graph
+      if (parsedResponse.extracted_contacts && Array.isArray(parsedResponse.extracted_contacts) && parsedResponse.extracted_contacts.length > 0) {
+        for (const contact of parsedResponse.extracted_contacts) {
+          await valkey.sadd('network_connections', contact);
+        }
+      }
+
+      reply = (parsedResponse.reply || "Done.") + `\n\n*(⚡ ${breethStatus} | Model: Vertex AI Gemini 3.0 Pro | 👁️ Multimodal)*`;
     } catch (err: any) {
       console.error("Gemini Error:", err);
       reply = `[Vertex AI Error] Make sure your Application Default Credentials are set up. Error: ${err.message}`;
