@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BrainCircuit, MessageSquare, LayoutDashboard, Search, LogOut, Sunrise } from "lucide-react";
+import { BrainCircuit, MessageSquare, LayoutDashboard, Search, LogOut, Sunrise, Server } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -12,6 +12,7 @@ export default function Sidebar() {
     { href: "/chat", label: "Nexus Chat", icon: MessageSquare },
     { href: "/dashboard", label: "Memory Graph", icon: LayoutDashboard },
     { href: "/search", label: "Semantic Search", icon: Search },
+    { href: "/mcp", label: "MCP Server", icon: Server },
   ];
 
   return (
