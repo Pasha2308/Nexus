@@ -88,7 +88,7 @@ export default function WebChat() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#0a0a0a] text-gray-200 font-sans">
+    <div className="flex flex-col h-full font-sans relative">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-black/50 backdrop-blur-md">
         <div className="flex items-center gap-4">

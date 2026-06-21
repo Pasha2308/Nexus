@@ -22,14 +22,14 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-gray-200 p-8 font-sans">
+    <div className="flex-1 overflow-y-auto text-gray-200 p-8 font-sans">
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Header */}
