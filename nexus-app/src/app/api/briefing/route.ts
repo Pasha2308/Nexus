@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import valkey from '@/lib/valkey';
 import { GoogleGenAI } from '@google/genai';
+import Groq from 'groq-sdk';
 
 export async function GET(req: Request) {
   try {
@@ -40,14 +41,27 @@ VALKEY RECENT MEMORIES (Context):
 ${recentMemories.length > 0 ? recentMemories.join('\\n---\\n') : "No recent conversations."}
 `;
 
-    const response = await ai.models.generateContent({
-      model: process.env.GEMINI_API_KEY ? 'gemini-1.5-pro' : 'gemini-1.5-pro-002',
-      contents: [
-        { role: 'user', parts: [{ text: systemPrompt }] }
-      ],
-    });
+    let responseText = "";
+    if (!process.env.GEMINI_API_KEY && process.env.GROQ_API_KEY) {
+      const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+      const groqResponse = await groq.chat.completions.create({
+        messages: [
+          { role: "system", content: systemPrompt }
+        ],
+        model: "llama-3.3-70b-versatile",
+      });
+      responseText = groqResponse.choices[0]?.message?.content || "";
+    } else {
+      const response = await ai.models.generateContent({
+        model: process.env.GEMINI_API_KEY ? 'gemini-1.5-pro' : 'gemini-1.5-pro-002',
+        contents: [
+          { role: 'user', parts: [{ text: systemPrompt }] }
+        ],
+      });
+      responseText = response.text || "";
+    }
 
-    return NextResponse.json({ briefing: response.text });
+    return NextResponse.json({ briefing: responseText });
   } catch (error: any) {
     console.error("Briefing API Error:", error);
     return NextResponse.json({ briefing: `[Briefing Error] ${error.message}` }, { status: 500 });
