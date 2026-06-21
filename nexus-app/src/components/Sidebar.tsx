@@ -28,11 +28,11 @@ export default function Sidebar() {
           const isActive = pathname === link.href;
           return (
             <Link key={link.href} href={link.href}>
-              <div className={\`flex items-center gap-3 px-4 py-3 rounded-xl transition-all \${
+              <div className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                 isActive 
                   ? "bg-blue-600/10 text-blue-400 border border-blue-600/20" 
                   : "text-gray-400 hover:text-white hover:bg-white/5 border border-transparent"
-              }\`}>
+              }`}>
                 <link.icon className="w-5 h-5" />
                 <span className="font-medium">{link.label}</span>
               </div>

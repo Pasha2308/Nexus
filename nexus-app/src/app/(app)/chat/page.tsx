@@ -138,12 +138,12 @@ export default function WebChat() {
           )}
 
           {messages.map((m, i) => (
-            <div key={i} className={\`flex \${m.role === 'user' ? 'justify-end' : 'justify-start'}\`}>
-              <div className={\`max-w-[80%] p-4 rounded-2xl \${
+            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[80%] p-4 rounded-2xl ${
                 m.role === 'user' 
                   ? 'bg-blue-600 text-white rounded-br-none' 
                   : 'bg-gray-800 border border-gray-700 text-gray-200 rounded-bl-none'
-              }\`}>
+              }`}>
                 {m.media && (
                   <div className="mb-3">
                     {m.media.startsWith('data:image') ? (
@@ -218,7 +218,7 @@ export default function WebChat() {
               }}
               placeholder="Message Nexus..."
               className="flex-1 bg-transparent text-white border-none focus:outline-none resize-none max-h-32 py-3"
-              rows={input.split('\\n').length > 1 ? Math.min(input.split('\\n').length, 5) : 1}
+              rows={input.split('n').length > 1 ? Math.min(input.split('n').length, 5) : 1}
             />
 
             <button 

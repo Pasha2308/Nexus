@@ -90,7 +90,7 @@ export default function Dashboard() {
             <div className="p-5 overflow-y-auto flex-1 space-y-4">
               {data?.memories?.length > 0 ? (
                 data.memories.map((mem: any, i: number) => (
-                  <div key={i} className={\`p-4 rounded-xl text-sm leading-relaxed \${mem.role === 'user' ? 'bg-blue-900/20 border border-blue-500/30 text-blue-100 ml-8' : 'bg-gray-800 border border-gray-700 text-gray-300 mr-8'}\`}>
+                  <div key={i} className={`p-4 rounded-xl text-sm leading-relaxed ${mem.role === 'user' ? 'bg-blue-900/20 border border-blue-500/30 text-blue-100 ml-8' : 'bg-gray-800 border border-gray-700 text-gray-300 mr-8'}`}>
                     <div className="text-xs font-bold mb-1 opacity-50 uppercase tracking-wider">
                       {mem.role}
                     </div>
@@ -124,11 +124,11 @@ export default function Dashboard() {
                           <div className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.8)]"></div>
                           <p className="text-gray-200 text-sm font-medium">{person}</p>
                         </div>
-                        <div className={\`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold \${
+                        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
                           isHot ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
                           isWarm ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
                           'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                        }\`}>
+                        }`}>
                           {isHot ? <Flame className="w-3 h-3" /> : isWarm ? <ThermometerSun className="w-3 h-3" /> : <Snowflake className="w-3 h-3" />}
                           {isHot ? 'HOT' : isWarm ? 'WARM' : 'COLD'}
                         </div>

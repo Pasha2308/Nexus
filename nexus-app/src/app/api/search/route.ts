@@ -27,10 +27,9 @@ export async function POST(req: Request) {
 
     // 2. Vertex AI Semantic Search
     const ai = new GoogleGenAI({
-      vertexai: {
-        project: process.env.GCP_PROJECT_ID || 'gen-lang-client-0121009752',
-        location: process.env.GCP_REGION || 'us-central1',
-      }
+      project: process.env.GCP_PROJECT_ID || 'gen-lang-client-0121009752',
+      location: process.env.GCP_REGION || 'us-central1',
+      vertexai: true
     });
 
     const systemPrompt = `You are the Semantic Search Engine for Nexus, an elite personal CRM.
