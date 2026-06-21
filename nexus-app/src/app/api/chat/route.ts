@@ -86,7 +86,7 @@ INSTRUCTIONS:
 
       // 10x Intelligent Generation using Gemini (Vertex AI) with Multimodal support
       const response = await ai.models.generateContent({
-        model: 'gemini-1.5-pro',
+        model: 'gemini-1.5-pro-002',
         contents: [
           { role: 'user', parts: parts }
         ],
