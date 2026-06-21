@@ -73,13 +73,13 @@ INSTRUCTIONS:
 
       // Add the system instructions and the latest message
       const response = await ai.models.generateContent({
-        model: 'gemini-1.5-pro',
+        model: 'gemini-3.0-pro',
         contents: [
           { role: 'user', parts: [{ text: systemPrompt + '\n\n' + message }] }
         ],
       });
 
-      reply = response.text + `\n\n*(⚡ ${breethStatus} | Model: Vertex AI Gemini 1.5 Pro)*`;
+      reply = response.text + `\n\n*(⚡ ${breethStatus} | Model: Vertex AI Gemini 3.0 Pro)*`;
     } catch (err: any) {
       console.error("Gemini Error:", err);
       reply = `[Vertex AI Error] Make sure your Application Default Credentials are set up. Error: ${err.message}`;
