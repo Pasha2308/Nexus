@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Image as ImageIcon, Mic, Paperclip, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { BrainCircuit } from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
@@ -18,6 +19,25 @@ export default function WebChat() {
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [liveContext, setLiveContext] = useState<string[]>([]);
+
+  // Fetch live context periodically
+  useEffect(() => {
+    const fetchContext = () => {
+      fetch('/api/dashboard')
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.network) {
+            setLiveContext(data.network.slice(0, 8)); // Show top 8 recent entities
+          }
+        })
+        .catch(() => {});
+    };
+    
+    fetchContext(); // initial
+    const interval = setInterval(fetchContext, 5000); // every 5s
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -88,8 +108,9 @@ export default function WebChat() {
   };
 
   return (
-    <div className="flex flex-col h-full font-sans relative">
-      {/* Header */}
+    <div className="flex h-full font-sans relative">
+      <div className="flex flex-col flex-1 relative">
+        {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-black/50 backdrop-blur-md">
         <div className="flex items-center gap-4">
           <Link href="/">
@@ -211,6 +232,30 @@ export default function WebChat() {
           <p className="text-center text-xs text-gray-500 mt-3">
             Nexus processes images and audio natively using Vertex AI Gemini.
           </p>
+        </div>
+      </div>
+      </div>
+      
+      {/* Right Side Context Panel (The 10x "Brain" visual) */}
+      <div className="hidden lg:block w-80 border-l border-gray-800 bg-black/80 p-6 overflow-y-auto">
+        <div className="flex items-center gap-2 mb-6">
+          <BrainCircuit className="w-5 h-5 text-purple-400 animate-pulse" />
+          <h2 className="text-sm font-bold text-gray-300 tracking-widest uppercase">Live Context</h2>
+        </div>
+        
+        <p className="text-xs text-gray-500 mb-4">Entities currently loaded in Valkey working memory.</p>
+        
+        <div className="space-y-3">
+          {liveContext.length > 0 ? (
+            liveContext.map((entity, idx) => (
+              <div key={idx} className="p-3 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-300 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_5px_#22c55e]"></div>
+                {entity}
+              </div>
+            ))
+          ) : (
+            <div className="text-xs text-gray-600">No context loaded.</div>
+          )}
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/genai": "^2.9.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "axios": "^1.18.0",
     "clsx": "^2.1.1",
     "discord.js": "^14.26.4",

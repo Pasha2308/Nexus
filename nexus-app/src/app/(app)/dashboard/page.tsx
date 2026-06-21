@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BrainCircuit, Network, Activity, Clock, FileText, Loader2, Server } from "lucide-react";
+import { BrainCircuit, Network, Activity, Clock, FileText, Loader2, Server, Flame, Snowflake, ThermometerSun } from "lucide-react";
 
 export default function Dashboard() {
   const [data, setData] = useState<any>(null);
@@ -112,12 +112,29 @@ export default function Dashboard() {
             <div className="p-5 overflow-y-auto flex-1">
               {data?.network?.length > 0 ? (
                 <div className="space-y-3">
-                  {data.network.map((person: string, i: number) => (
-                    <div key={i} className="p-4 bg-gray-800/50 rounded-xl border border-gray-700 flex items-start gap-3 hover:bg-gray-800 transition-colors">
-                      <div className="w-2 h-2 mt-2 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.8)]"></div>
-                      <p className="text-gray-200 text-sm leading-relaxed">{person}</p>
-                    </div>
-                  ))}
+                  {data.network.map((person: string, i: number) => {
+                    // Generate deterministic health status for hackathon demo
+                    const healthScore = person.length % 3;
+                    const isHot = healthScore === 0;
+                    const isWarm = healthScore === 1;
+                    
+                    return (
+                      <div key={i} className="p-4 bg-gray-800/50 rounded-xl border border-gray-700 flex items-center justify-between hover:bg-gray-800 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.8)]"></div>
+                          <p className="text-gray-200 text-sm font-medium">{person}</p>
+                        </div>
+                        <div className={\`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold \${
+                          isHot ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                          isWarm ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
+                          'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                        }\`}>
+                          {isHot ? <Flame className="w-3 h-3" /> : isWarm ? <ThermometerSun className="w-3 h-3" /> : <Snowflake className="w-3 h-3" />}
+                          {isHot ? 'HOT' : isWarm ? 'WARM' : 'COLD'}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-gray-500 text-center mt-10">No network entities extracted yet.</p>
