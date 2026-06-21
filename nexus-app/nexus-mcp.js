@@ -192,7 +192,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           try { return JSON.parse(m).content; } catch (e) { return m; }
         });
 
-        const ai = new GoogleGenAI({
+        const ai = process.env.GEMINI_API_KEY ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }) : new GoogleGenAI({
           project: process.env.GCP_PROJECT_ID || 'gen-lang-client-0121009752',
           location: process.env.GCP_REGION || 'us-central1',
           vertexai: true
@@ -210,7 +210,7 @@ ${recentMemories.length > 0 ? recentMemories.join('\\n---\\n') : "No recent conv
 `;
 
         const response = await ai.models.generateContent({
-          model: 'gemini-1.5-pro-002',
+          model: process.env.GEMINI_API_KEY ? 'gemini-1.5-pro' : 'gemini-1.5-pro-002',
           contents: [
             { role: 'user', parts: [{ text: systemPrompt + '\\n\\nUSER QUERY: ' + query }] }
           ],

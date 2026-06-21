@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     try {
       // Initialize Vertex AI using Application Default Credentials
       // Ensure you run `gcloud auth application-default login` if running locally
-      const ai = new GoogleGenAI({
+      const ai = process.env.GEMINI_API_KEY ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }) : new GoogleGenAI({
         project: process.env.GCP_PROJECT_ID || 'gen-lang-client-0121009752',
         location: process.env.GCP_REGION || 'us-central1',
         vertexai: true
@@ -86,7 +86,7 @@ INSTRUCTIONS:
 
       // 10x Intelligent Generation using Gemini (Vertex AI) with Multimodal support
       const response = await ai.models.generateContent({
-        model: 'gemini-1.5-pro-002',
+        model: process.env.GEMINI_API_KEY ? 'gemini-1.5-pro' : 'gemini-1.5-pro-002',
         contents: [
           { role: 'user', parts: parts }
         ],
