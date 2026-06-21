@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import valkey from '@/lib/valkey';
 import { GoogleGenAI } from '@google/genai';
+import Groq from 'groq-sdk';
 
 export async function POST(req: Request) {
   try {
@@ -84,23 +85,42 @@ INSTRUCTIONS:
         });
       }
 
-      // 10x Intelligent Generation using Gemini (Vertex AI) with Multimodal support
-      const response = await ai.models.generateContent({
-        model: process.env.GEMINI_API_KEY ? 'gemini-1.5-pro' : 'gemini-1.5-pro-002',
-        contents: [
-          { role: 'user', parts: parts }
-        ],
-        config: {
-          responseMimeType: "application/json",
-        }
-      });
-
-      // Parse the JSON response from Gemini
       let parsedResponse;
-      try {
-        parsedResponse = JSON.parse(response.text || "{}");
-      } catch (e) {
-        parsedResponse = { reply: response.text, extracted_contacts: [] };
+      
+      // FALLBACK LOGIC: Use Groq if Gemini API key is missing and Groq is available
+      if (!process.env.GEMINI_API_KEY && process.env.GROQ_API_KEY) {
+        const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+        const groqResponse = await groq.chat.completions.create({
+          messages: [
+            { role: "system", content: "You MUST output ONLY valid JSON. " + systemPrompt },
+            { role: "user", content: message }
+          ],
+          model: "llama3-70b-8192",
+          response_format: { type: "json_object" }
+        });
+        
+        try {
+          parsedResponse = JSON.parse(groqResponse.choices[0]?.message?.content || "{}");
+        } catch (e) {
+          parsedResponse = { reply: groqResponse.choices[0]?.message?.content, extracted_contacts: [] };
+        }
+      } else {
+        // Use Gemini (AI Studio or Vertex)
+        const response = await ai.models.generateContent({
+          model: process.env.GEMINI_API_KEY ? 'gemini-1.5-pro' : 'gemini-1.5-pro-002',
+          contents: [
+            { role: 'user', parts: parts }
+          ],
+          config: {
+            responseMimeType: "application/json",
+          }
+        });
+
+        try {
+          parsedResponse = JSON.parse(response.text || "{}");
+        } catch (e) {
+          parsedResponse = { reply: response.text, extracted_contacts: [] };
+        }
       }
 
       // 6. Save cleanly extracted entities to Valkey Network Graph
@@ -108,7 +128,7 @@ INSTRUCTIONS:
         await Promise.all(parsedResponse.extracted_contacts.map((contact: string) => valkey.sadd('network_connections', contact)));
       }
 
-      reply = (parsedResponse.reply || "Done.") + `\n\n*(⚡ ${breethStatus} | Model: Gemini 1.5 Pro | 👁️ Multimodal)*`;
+      reply = (parsedResponse.reply || "Done.") + `\n\n*(⚡ ${breethStatus} | Model: ${(!process.env.GEMINI_API_KEY && process.env.GROQ_API_KEY) ? "Groq LLaMA 3 70B" : "Gemini 1.5 Pro"} | 👁️ ${(!process.env.GEMINI_API_KEY && process.env.GROQ_API_KEY) ? "Text Only" : "Multimodal"})*`;
     } catch (err: any) {
       console.error("Gemini Error:", err);
       reply = `[Vertex AI Error] Make sure your Application Default Credentials are set up. Error: ${err.message}`;
