@@ -4,7 +4,8 @@ import { GoogleGenAI } from '@google/genai';
 
 export async function POST(req: Request) {
   try {
-    const { message, history } = await req.json();
+    // 1. Accept optional mediaFiles (array of { mimeType, base64Data })
+    const { message, history, mediaFiles } = await req.json();
     const breethApiKey = process.env.BREETH_AI_API_KEY;
     const geminiApiKey = process.env.GEMINI_API_KEY;
 
@@ -67,19 +68,36 @@ CRITICAL CONTEXT FROM THE FOUNDER'S NETWORK MEMORY (Loaded from Valkey + Breeth 
 ${networkContext.length > 0 ? networkContext.map(c => `- ${c}`).join('\n') : "No connections found yet."}
 
 INSTRUCTIONS:
-1. When the founder asks a question (like "who is alex"), analyze the CONTEXT above to give a precise, confident answer. Do not say "Based on the context...", just give the answer naturally as if you remember it.
-2. If the founder tells you about a new meeting (e.g. "I met John..."), acknowledge that you have permanently saved this connection to their memory graph and analyze how this person could be useful for their startup.
-3. If they ask a general question, answer brilliantly.`;
+1. When the founder asks a question, analyze the CONTEXT above to give a precise, confident answer. Do not say "Based on the context...", just answer naturally.
+2. If the founder tells you about a new meeting, acknowledge that you have permanently saved this connection.
+3. MULTIMODAL CAPABILITIES: If the user uploaded an image (e.g. business card, whiteboard) or audio file, YOU CAN SEE/HEAR IT. 
+   - If it's a business card, extract the name, title, and company, and treat it as a new contact. 
+   - If it's an audio voice memo, transcribe it, identify the intent, and log the action items.`;
 
-      // Add the system instructions and the latest message
+      // Construct the parts array
+      const parts: any[] = [{ text: systemPrompt + '\n\n' + message }];
+
+      // Attach any media files (images/audio) for Gemini to process natively
+      if (mediaFiles && Array.isArray(mediaFiles)) {
+        mediaFiles.forEach((file) => {
+          parts.push({
+            inlineData: {
+              data: file.base64Data,
+              mimeType: file.mimeType
+            }
+          });
+        });
+      }
+
+      // 10x Intelligent Generation using Gemini (Vertex AI) with Multimodal support
       const response = await ai.models.generateContent({
         model: 'gemini-3.0-pro',
         contents: [
-          { role: 'user', parts: [{ text: systemPrompt + '\n\n' + message }] }
+          { role: 'user', parts: parts }
         ],
       });
 
-      reply = response.text + `\n\n*(⚡ ${breethStatus} | Model: Vertex AI Gemini 3.0 Pro)*`;
+      reply = response.text + `\n\n*(⚡ ${breethStatus} | Model: Vertex AI Gemini 3.0 Pro | 👁️ Multimodal)*`;
     } catch (err: any) {
       console.error("Gemini Error:", err);
       reply = `[Vertex AI Error] Make sure your Application Default Credentials are set up. Error: ${err.message}`;

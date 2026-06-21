@@ -12,6 +12,8 @@
     "@google/genai": "^2.9.0",
     "axios": "^1.18.0",
     "clsx": "^2.1.1",
+    "discord.js": "^14.26.4",
+    "dotenv": "^17.4.2",
     "framer-motion": "^12.40.0",
     "ioredis": "^5.11.1",
     "lucide-react": "^1.21.0",
