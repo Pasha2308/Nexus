@@ -25,14 +25,15 @@ Nexus is a "second brain" that lives wherever the founder lives. Using **Vertex 
 
 ## 🏗️ Architecture
 
-Nexus uses a modern, hybrid AI architecture:
+Nexus uses a modern, high-performance hybrid AI architecture:
 
 1. **Frontend (Next.js 14 App Router):** Provides a secure Web Chat UI (`/chat`), a beautiful Landing Page (`/`), the Memory Dashboard (`/dashboard`), and the MCP configuration page (`/mcp`).
-2. **The Core Engine (Vertex AI / Gemini 1.5 Pro):** We use the `@google/genai` SDK over Vertex AI. Gemini acts as an OCR engine, transcriber, and reasoning agent.
-3. **The Memory Layer (Upstash Valkey):** We use Valkey (Redis-compatible) for ultra-fast, in-memory state management. It stores:
-   - `session_memory`: The raw timeline of interactions.
-   - `network_connections`: A Set of unique entities extracted by the AI.
-4. **MCP Server (`nexus-mcp.js`):** A standalone Node.js stdio server that exposes `semantic_search`, `get_network_graph`, `add_contact`, and `add_memory` tools to external agents via the Model Context Protocol.
+2. **Intelligence Engine (Gemini 1.5 Pro & Groq Llama 3.3 70B):** We use a dual-LLM routing system. If Vertex AI is misconfigured, Nexus automatically falls back to Groq's lightning-fast inference using `llama-3.3-70b-versatile`.
+3. **The Memory Layer (Upstash Valkey):** We use Valkey (Redis-compatible) for ultra-fast, zero-latency state management. It stores:
+   - `session_memory` (Lists): The rolling timeline of interactions.
+   - `network_connections` (Sets): Unique entities extracted by the AI, building a realtime Graph.
+4. **Asynchronous Intent Engine (Breeth AI):** While the main LLM replies to the user, we passively ping the `api.thebreeth.com/v1/episodes` endpoint in the background to log the data and extract deeper semantic intent.
+5. **MCP Server (`nexus-mcp.js`):** A standalone Node.js server that exposes `semantic_search`, `get_network_graph`, `add_contact`, and `add_memory` tools to external agents (like Claude Desktop) via the Model Context Protocol.
 
 ---
 
@@ -60,17 +61,19 @@ If you are running this locally, follow these steps to test the full Nexus exper
 ## 🛠️ Environment Setup
 
 Ensure your `.env` file contains:
-\`\`\`env
-# Valkey Database
+```env
+# Valkey Database (Upstash)
 REDIS_URL="..."
 
-# Vertex AI Settings
+# Intelligence Engines (Gemini & Groq Fallback)
+GEMINI_API_KEY="..."
+GROQ_API_KEY="..."
 GCP_PROJECT_ID="..."
 GCP_REGION="..."
 
-# Optional Services
+# Intent Extraction
 BREETH_AI_API_KEY="..."
 
 # Auth
 MASTER_PASSWORD="nexus10x"
-\`\`\`
+```
