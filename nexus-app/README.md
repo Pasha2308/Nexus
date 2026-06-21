@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🧠 Nexus: The 10x Multimodal Executive Assistant
 
-## Getting Started
+Nexus is an Enterprise-grade Personal CRM and AI Executive Assistant built for founders. It solves the problem of **context fragmentation** by intercepting unstructured data (voice memos, images, and casual chat) and building a persistent, graph-based memory of your entire network.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 The Hackathon Pitch
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Problem Statement:** 
+Founders and executives suffer from context loss. Traditional CRMs require manual data entry, and modern AI chatbots forget everything when the session ends. 
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**The Solution:** 
+Nexus is a "second brain" that lives wherever the founder lives. Using **Vertex AI (Gemini 3.0 Pro)**, Nexus natively processes multimodal inputs (images of business cards, audio voice memos) and permanently logs the extracted relationships and action items into **Upstash Valkey**. It acts as an omnipresent context engine that automatically builds your network graph.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### The 10x "Wow Factor" Features
+1. **True Multimodal Processing:** Upload a photo of a whiteboard or a `.ogg` voice memo. Nexus passes the raw bytes directly to Vertex AI, which extracts the intent natively without needing separate OCR or Speech-to-Text APIs.
+2. **Persistent Context Graph:** Memory isn't lost in a chat window. Every interaction is parsed, categorized, and saved into Valkey.
+3. **Omnipresent Access:** Nexus can be accessed via a secure Next.js Web App OR via a Discord Bot integration.
+4. **Real-time Memory Dashboard:** A stunning UI that visualizes your raw memory stream and the AI-extracted network graph.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🏗️ How the Integration Works (Architecture)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Nexus uses a modern, hybrid AI architecture:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Frontend (Next.js 14 App Router):** Provides a secure Web Chat UI (`/chat`), a beautiful Landing Page (`/`), and the Memory Dashboard (`/dashboard`).
+2. **Authentication Middleware:** Uses Next.js Edge Middleware to secure the `/chat` and `/dashboard` routes with a Master Password, ensuring personal CRM data stays private.
+3. **The Core Engine (Vertex AI / Gemini 3.0 Pro):** The brain of Nexus. We use the `@google/genai` SDK. When you send a message or an image, it is passed to Gemini along with your historical Valkey context. Gemini acts as an OCR engine, a transcriber, and a conversational agent all at once.
+4. **The Memory Layer (Upstash Valkey):** Instead of a heavy Postgres database, we use Valkey (Redis-compatible) for ultra-fast, in-memory state management. It stores two things:
+   - `session_memory`: The raw timeline of interactions.
+   - `network_connections`: A Set of unique entities (people, companies) extracted by the AI.
+5. **Discord Integration (Optional/Headless):** A lightweight Node.js bot (`discord-bot/bot.js`) that intercepts Discord DMs, converts attachments to Base64, and proxies them to the Next.js `/api/chat` route.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 💻 Local Testing & Usage
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+If you are running this locally (`npm run dev`), follow these steps to test the Web Application:
+
+1. **Open the Web App:** Navigate to `http://localhost:3000`
+2. **Log In:** Click "Open Nexus Chat". You will be redirected to the secure login page.
+   - **MASTER PASSWORD:** `nexus10x`
+3. **Test the Chat:** 
+   - Type: *"I just met Sarah from Microsoft, she wants to partner on AI."*
+   - Upload: Click the paperclip icon to upload an image of a handwritten note.
+4. **View the Dashboard:** Navigate to `http://localhost:3000/dashboard` to see your Valkey database update in real-time with the new entities!
+
+---
+
+## 🛠️ Environment Variables Setup
+
+Ensure your `.env` file contains:
+\`\`\`env
+# Valkey Database
+REDIS_URL="..."
+
+# AI Providers
+GEMINI_API_KEY="..."
+BREETH_AI_API_KEY="..."
+GCP_PROJECT_ID="..."
+GCP_REGION="..."
+
+# Auth
+MASTER_PASSWORD="nexus10x"
+
+# Discord (Optional)
+DISCORD_BOT_TOKEN="..."
+DISCORD_CLIENT_ID="..."
+DISCORD_GUILD_ID="..."
+\`\`\`
